@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Achinos Beach Bar - Παραγγελία</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #eef4ff; font-family: 'Segoe UI', sans-serif; }
+        .app-container { width: 100%; background: rgba(255,250,240,0.96); padding: 4vw 3vw 6vw; }
+        .header { display: flex; flex-direction: column; align-items: center; gap: 3vw; border-bottom: 0.6vw solid #2a9d8f; padding-bottom: 4vw; margin-bottom: 5vw; text-align: center; }
+        .logo h1 { font-size: clamp(1.8rem,8vw,6rem); background: linear-gradient(135deg,#1e6091,#2a9d8f); -webkit-background-clip:text; color:transparent; }
+        .categories-scroll { display: flex; overflow-x: auto; gap: 4vw; padding: 2vw 0 4vw; margin-bottom: 4vw; }
+        .category-btn { background: #e9ecef; border: none; padding: 3vw 7vw; border-radius: 20vw; font-size: clamp(1rem,4.5vw,2.8rem); font-weight: bold; color: #1e6091; white-space: nowrap; cursor: pointer; }
+        .category-btn.active { background: #f4a261; color: white; }
+        .menu-list { display: flex; flex-direction: column; gap: 6vw; margin: 4vw 0 8vw; }
+        .product-card { background: white; border-radius: 8vw; padding: 5vw; border: 0.3vw solid #2a9d8f; display: flex; align-items: center; gap: 4vw; }
+        .product-img { width: 15vw; height: 15vw; object-fit: cover; border-radius: 5vw; background: #e9ecef; }
+        .product-info { flex: 1; }
+        .product-name { font-size: clamp(1.2rem,5vw,3rem); font-weight: bold; color: #1e6091; }
+        .product-desc { font-size: clamp(0.8rem,3.5vw,2rem); color: #6c757d; margin: 2vw 0; }
+        .product-price { font-size: clamp(1rem,4.5vw,2.8rem); font-weight: bold; color: #f4a261; }
+        .add-btn { background: #2a9d8f; border: none; width: 13vw; height: 13vw; border-radius: 50%; font-size: clamp(1.2rem,6vw,3rem); color: white; cursor: pointer; }
+        .cart-area { background: #ffffffdd; border-radius: 12vw; padding: 6vw; margin-top: 6vw; border: 0.5vw solid #f4a261; }
+        .cart-title { font-size: clamp(1.5rem,7vw,4rem); text-align: center; color: #2a9d8f; margin-bottom: 6vw; }
+        .cart-items { max-height: 50vh; overflow-y: auto; margin-bottom: 5vw; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 3vw 0; border-bottom: 0.2vw solid #e9ecef; }
+        .qty-btn { background: #e9ecef; border: none; width: 8vw; height: 8vw; border-radius: 50%; font-size: clamp(1rem,5vw,2rem); cursor: pointer; }
+        .cart-total { text-align: right; font-size: clamp(1.2rem,5vw,3rem); font-weight: bold; margin: 4vw 0; color: #2a9d8f; }
+        .place-order-btn { background: #f4a261; border: none; padding: 5vw; width: 100%; border-radius: 20vw; font-size: clamp(1.2rem,5.5vw,3rem); font-weight: bold; color: white; cursor: pointer; }
+        .extra-fields { background: #f8f9fa; border-radius: 10vw; padding: 7vw 6vw; margin: 7vw 0 6vw; border: 0.4vw solid #2a9d8f; }
+        .input-row { margin-bottom: 5vw; }
+        .input-row label { font-size: clamp(1rem,4.5vw,2.8rem); color: #2a9d8f; font-weight: bold; display: block; margin-bottom: 2vw; }
+        .input-row input, .input-row textarea { width: 100%; padding: 4vw 6vw; border: 0.3vw solid #f4a261; border-radius: 8vw; font-size: clamp(1rem,4.5vw,2.5rem); }
+        footer { margin-top: 8vw; text-align: center; font-size: clamp(0.7rem,3vw,1.8rem); color: #1e6091; border-top: 0.3vw solid #f4a261; padding-top: 5vw; }
+        @media (min-width: 768px) { .product-img { width: 8vw; height: 8vw; } }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo"><h1>🏖️ ACHINOS</h1><p>Παραγγελία στην παραλία</p></div>
+    </div>
+    <div class="categories-scroll" id="categoriesContainer"></div>
+    <div id="menuList" class="menu-list"></div>
+    <div class="cart-area">
+        <div class="cart-title">🛒 ΚΑΛΑΘΙ</div>
+        <div id="cartItems" class="cart-items"></div>
+        <div id="cartTotal" class="cart-total">Σύνολο: €0.00</div>
+        <button id="placeOrderBtn" class="place-order-btn">📲 ΟΛΟΚΛΗΡΩΣΗ ΠΑΡΑΓΓΕΛΙΑΣ</button>
+    </div>
+    <div class="extra-fields">
+        <div class="input-row">
+            <label>Αριθμός Ξαπλώστρας</label>
+            <input type="text" id="sunbedNumber" placeholder="π.χ. 12">
+        </div>
+        <div class="input-row">
+            <label>Όνομα (προαιρετικό)</label>
+            <input type="text" id="customerName" placeholder="Το όνομά σας">
+        </div>
+        <div class="input-row">
+            <label>Σημειώσεις</label>
+            <textarea id="orderNotes" rows="2" placeholder="π.χ. χωρίς πάγο"></textarea>
+        </div>
+    </div>
+    <footer>© ACHINOS BEACH BAR | Σκανάρετε το QR</footer>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Fu9-gFIsfcEXFIL9YPfEM4c1GhrzVPOQq9u6t1MJ0GdhiEyl99pHDtw-PBRczbtajw/exec";
+
+    let menuData = { categories: [], products: [] };
+    let cart = [];
+    let activeCategory = "";
+    let pollingInterval = null;
+
+    async function fetchMenu() {
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getMenu`);
+            const data = await res.json();
+            menuData = data;
+            if (menuData.categories.length) {
+                if (!menuData.categories.find(c => c.name === activeCategory)) {
+                    activeCategory = menuData.categories[0].name;
+                }
+                renderCategories();
+                renderMenu();
+            } else {
+                document.getElementById("categoriesContainer").innerHTML = "";
+                document.getElementById("menuList").innerHTML = "<div style='text-align:center; padding:5vw;'>Δεν υπάρχουν κατηγορίες ακόμα</div>";
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function renderCategories() {
+        const container = document.getElementById("categoriesContainer");
+        container.innerHTML = menuData.categories.filter(c => c.active).map(cat => `
+            <button class="category-btn ${activeCategory === cat.name ? 'active' : ''}" data-cat="${cat.name}">${cat.emoji} ${cat.name}</button>
+        `).join("");
+        document.querySelectorAll(".category-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                activeCategory = btn.dataset.cat;
+                renderCategories();
+                renderMenu();
+            });
+        });
+    }
+
+    function renderMenu() {
+        const container = document.getElementById("menuList");
+        const activeCatObj = menuData.categories.find(c => c.name === activeCategory);
+        if (!activeCatObj) return;
+        const activeProds = menuData.products.filter(p => p.active && p.categoryId === activeCatObj.id);
+        container.innerHTML = activeProds.map(prod => `
+            <div class="product-card">
+                ${prod.imageUrl ? `<img src="${prod.imageUrl}" class="product-img">` : `<div class="product-img" style="display:flex;align-items:center;justify-content:center;">${prod.emoji}</div>`}
+                <div class="product-info">
+                    <div class="product-name">${prod.name}</div>
+                    <div class="product-desc">${prod.desc}</div>
+                    <div class="product-price">€${prod.price.toFixed(2)}</div>
+                </div>
+                <button class="add-btn" data-name="${prod.name}" data-price="${prod.price}" data-emoji="${prod.emoji}">+</button>
+            </div>
+        `).join("");
+        document.querySelectorAll(".add-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const name = btn.dataset.name;
+                const price = parseFloat(btn.dataset.price);
+                const emoji = btn.dataset.emoji;
+                addToCart(name, price, emoji);
+            });
+        });
+    }
+
+    function addToCart(name, price, emoji) {
+        const existing = cart.find(item => item.name === name);
+        if (existing) existing.quantity++;
+        else cart.push({ name, price, quantity: 1, emoji });
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById("cartItems");
+        const totalSpan = document.getElementById("cartTotal");
+        if (cart.length === 0) {
+            container.innerHTML = "<div style='text-align:center; padding:5vw;'>Το καλάθι είναι άδειο</div>";
+            totalSpan.innerText = "Σύνολο: €0.00";
+            return;
+        }
+        let html = "", total = 0;
+        cart.forEach((item, idx) => {
+            total += item.price * item.quantity;
+            html += `
+                <div class="cart-item">
+                    <div><span>${item.emoji} ${item.name}</span></div>
+                    <div>
+                        <button class="qty-btn" data-idx="${idx}" data-delta="-1">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="qty-btn" data-idx="${idx}" data-delta="1">+</button>
+                        <span>€${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        totalSpan.innerText = `Σύνολο: €${total.toFixed(2)}`;
+        document.querySelectorAll(".qty-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const idx = parseInt(btn.dataset.idx);
+                const delta = parseInt(btn.dataset.delta);
+                if (cart[idx]) {
+                    cart[idx].quantity += delta;
+                    if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+                    renderCart();
+                }
+            });
+        });
+    }
+
+    async function placeOrder() {
+        if (cart.length === 0) { alert("Το καλάθι είναι άδειο"); return; }
+        const sunbed = document.getElementById("sunbedNumber").value.trim();
+        if (!sunbed) { alert("Εισάγετε αριθμό ξαπλώστρας"); return; }
+        const customerName = document.getElementById("customerName").value.trim() || "Επισκέπτης";
+        const notes = document.getElementById("orderNotes").value.trim();
+        const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        const order = {
+            id: "ORD" + Date.now(),
+            sunbed,
+            customerName,
+            items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+            total,
+            status: "pending",
+            date: new Date().toLocaleString(),
+            notes
+        };
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "placeOrder", order }),
+                headers: { "Content-Type": "application/json" }
+            });
+            if (res.ok) {
+                alert("Η παραγγελία σας στάλθηκε! Καλή απόλαυση!");
+                cart = [];
+                renderCart();
+                document.getElementById("sunbedNumber").value = "";
+                document.getElementById("customerName").value = "";
+                document.getElementById("orderNotes").value = "";
+            } else throw new Error();
+        } catch (e) { alert("Σφάλμα κατά την αποστολή"); }
+    }
+
+    document.getElementById("placeOrderBtn").addEventListener("click", placeOrder);
+    fetchMenu();
+    pollingInterval = setInterval(() => { fetchMenu(); }, 10000);
+</script>
+</body>
+</html>
